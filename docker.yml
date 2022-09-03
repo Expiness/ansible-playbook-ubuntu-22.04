@@ -1,0 +1,22 @@
+---
+- name: Docker Install
+  hosts: all
+  become: true
+  tasks:
+  - name: install prerequisites for Docker repository
+    apt: pkg=ca-certificates,curl,gnupg2,lsb-release state=present
+  - name: install docker key
+    apt_key: url=https://download.docker.com/linux/ubuntu/gpg state=present
+  - name: add repository
+    apt_repository: repo="deb [arch=amd64] https://download.docker.com/linux/{{ ansible_distribution | lower }} {{ ansible_distribution_release }} stable"
+  - name: install docker
+    apt: pkg=docker-ce,docker-ce-cli,containerd.io,docker-compose-plugin state=latest
+  - name: Start services docker and make it enable on boot
+    service: name=docker state=started enabled=yes
+  - name: start service containerd and make it enable on boot
+    service: name=containerd state=started enabled=yes
+  handlers:
+  - name: Restart docker
+    service: name=docker state=restarted
+  - name: Restart containerd
+    service: name=containerd state=restarted
